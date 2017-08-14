@@ -83,9 +83,6 @@ class RepositoryCreateView(LoginRequiredMixin, CreateView):
 				new_tag, created = Tag.objects.get_or_create(title=tag)
 				new_tag.repos.add(form.instance)
 
-		# init repo after model object created
-		pygit2.init_repository(form.instance.get_repo_path())
-
 		return valid_data
 
 
@@ -335,7 +332,6 @@ class BlobEditView(OwnerRequiredMixin, FormView):
 
 		except OSError:
 			raise form.ValidationError("Save error, please check the file.")
-		
 
 		return super(BlobEditView, self).form_valid(form)
 
