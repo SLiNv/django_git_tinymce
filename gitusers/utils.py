@@ -1,10 +1,12 @@
+from pygit2 import Signature
 from os import path
 
 
 def find_file_oid_in_tree(filename, tree):
     for entry in tree:
-        if entry.name.lower() == filename.lower():
-            return entry.id
+        if entry.type == 'blob':
+            if entry.name.lower() == filename.lower():
+                return entry.id
     return 404
 
 
@@ -15,8 +17,15 @@ def find_file_oid_in_tree_using_index(filename, index_tree):
     return 404
 
 
+def find_folder_oid_in_tree(foldername, tree):
+    for entry in tree:
+        if entry.type == 'tree':
+            if entry.name.lower() == foldername.lower():
+                return entry.id
+    return 404
+
+
 def create_commit(user, repo, message, filename):
-    from pygit2 import Signature
     # example:
     '''
     author = Signature('Alice Author', 'alice@authors.tld')
@@ -58,7 +67,6 @@ def create_commit(user, repo, message, filename):
 
 
 def create_commit_folders(user, repo, message, filename, directory):
-    from pygit2 import Signature
     # example:
     '''
     author = Signature('Alice Author', 'alice@authors.tld')
@@ -82,40 +90,20 @@ def create_commit_folders(user, repo, message, filename, directory):
         useremail = 'none@noemail.com'
     author = Signature(user.username, useremail)
     committer = Signature(user.username, useremail)
-    # repo.index.add(path.join( directory))
-    print('directory_internal', directory)
-    print('filename_internal', filename)
-
     index_tree = repo.index
-    commit = repo.revparse_single('HEAD')
-    tree = commit.tree
-    # folders = directory.split("/")
     index_tree.read()
-    folders = directory.split("/")
-    # for folder in folders:
-    #     index_tree.write_tree(str(folder))
-    #     item = index_tree.__getitem__(str(folder))
-    #     print('item', item)
-    #     index_tree.read_tree(item.id)
     index_tree.add(path.join(directory, filename))
     index_tree.write()
     index_tree = repo.index
-
     tree2 = index_tree.write_tree()
-
-    # repo.index.add(path.join( directory, filename))
-    # repo.index.write()
-    # tree = repo.index.write_tree()
     parent = None
     try:
         parent = repo.revparse_single('HEAD')
     except KeyError:
         pass
-
     parents = []
     if parent:
         parents.append(parent.oid.hex)
-
     sha = repo.create_commit(ref, author, committer, message, tree2, parents)
     return sha
 
@@ -153,7 +141,6 @@ def delete_commit(user, repo, message, filename):
         parent = repo.revparse_single('HEAD')
     except KeyError:
         pass
-
     parents = []
     if parent:
         parents.append(parent.oid.hex)
@@ -187,11 +174,7 @@ def delete_commit_folders(user, repo, message, filename, directory):
         useremail = 'none@noemail.com'
     author = Signature(user.username, useremail)
     committer = Signature(user.username, useremail)
-
     index_tree = repo.index
-    commit = repo.revparse_single('HEAD')
-    tree = commit.tree
-    # folders = directory.split("/")
     index_tree.read()
     index_tree.remove(path.join(directory, filename))
     index_tree.write()

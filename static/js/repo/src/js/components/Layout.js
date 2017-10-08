@@ -78,7 +78,7 @@ export default class Layout extends React.Component {
       concurrent: 1     // how many requests can be sent concurrently
     })
     var req=request
-              .post(`/api/v1/files/${window.props.repo_id}/${window.props.directory}`)
+              .post(`/api/v1/files/${window.props.repo_id}/${(window.props.directory !== "") ? `${window.props.directory}/` : ""}`)
               .use(throttle.plugin())
     files.forEach((dropped_file) => {
 
@@ -90,13 +90,10 @@ export default class Layout extends React.Component {
       });
       req.send
       req.end(function(err,response){
-          console.log("upload done!!!!!");
+        if (!err) {
+          window.location.reload();
+        }
     })
-
-
-
-
-
 
   }
   onDragEnter() {
@@ -201,10 +198,8 @@ export default class Layout extends React.Component {
       >
       <div className="row">
         <div className="col-md-6 col-xs-8">
-          <p>
             <h2 className="repo-header"><a href={`/${window.props.repo_owner}`}>{window.props.repo_owner}</a> / <a href={`/${window.props.repo_owner}/${window.props.repo_name}`}>{window.props.repo_name}</a> </h2>
-            <div>{(window.props.is_fork) ? <div><font className="small-fork-text">Forked from <a href={`/${window.props.fork_owner}/${window.props.fork_name}/`}>{`${window.props.fork_owner}/${window.props.fork_name}`}</a></font></div> : null }</div>
-          </p>
+            <div style={{marginBottom: '10px'}}>{(window.props.is_fork) ? <div><font className="small-fork-text">Forked from <a href={`/${window.props.fork_owner}/${window.props.fork_name}/`}>{`${window.props.fork_owner}/${window.props.fork_name}`}</a></font></div> : null }</div>
         </div>
         <div className="col-md-6 text-right col-xs-4">
           <div class="btn-group" role="group" aria-label="...">
@@ -230,11 +225,8 @@ export default class Layout extends React.Component {
       </div>
       <div className="row">
         <div className="col-md-12">
-          <p>
             <h4 className="repo-header">{repo.description} {editShow}</h4>
-
-
-          </p>
+            <p style={{marginBottom: '5px'}}></p>
 
           <Branches branches={files.branches} is_owner={files.is_owner} is_editor={files.is_editor} />
 
@@ -247,6 +239,8 @@ export default class Layout extends React.Component {
                 <tr>
                   <th>Filename</th>
                   <th></th>
+                  <th></th>
+                  <th></th>
                   <th>Last Commit</th>
                 </tr>
               </thead>
@@ -256,11 +250,12 @@ export default class Layout extends React.Component {
                 const icon = this.getIcon(file.type)
                 const editLink = (files.is_owner || files.is_editor) ? (file.type == 'blob') ? <a href={`/${window.props.repo_owner}/${window.props.repo_name}/${(window.props.directory !== '') ? `${window.props.directory}/` : ``}edit/${file.name}`} style={{fontSize: '.75em', color: '#999'}}>edit</a>: null : null
                 const renameLink = (files.is_owner || files.is_editor) ? (file.type == 'blob') ? <a href={`/${window.props.repo_owner}/${window.props.repo_name}/${(window.props.directory !== '') ? `${window.props.directory}/` : ``}blob/${file.name}/rename`} style={{fontSize: '.75em', color: '#444'}}>rename</a>: null : null
-                const fileLink = (file.type == 'blob' && window.props.directory !== "") ? <a href={`/${window.props.repo_owner}/${window.props.repo_name}/${window.props.directory}/blob/${file.name}`}>{ file.name }</a> : (file.type == 'blob') ? <a href={`blob/${file.name}`}>{ file.name }</a> : <a href={`/${window.props.repo_owner}/${window.props.repo_name}/${(window.props.directory !== '') ? `${window.props.directory}/` : ``}${file.name}`}>{ file.name }</a>
+                const fileLink = (file.type == 'blob' && window.props.directory !== "") ? <a href={`/${window.props.repo_owner}/${window.props.repo_name}/render/${window.props.directory}/${file.name}`}>{ file.name }</a> : (file.type == 'blob') ? <a href={`render/${file.name}`}>{ file.name }</a> : <a href={`/${window.props.repo_owner}/${window.props.repo_name}/${(window.props.directory !== '') ? `${window.props.directory}/` : ``}${file.name}`}>{ file.name }</a>
                 const deleteLink = ((files.is_owner || files.is_editor) && file.type == 'blob') ? <a href={`/${window.props.repo_owner}/${window.props.repo_name}/${(window.props.directory !== '') ? `${window.props.directory}/` : ``}blob/${file.name}/delete`}><font style={{fontSize: '.75em', color: '#f33'}}>delete</font></a> : null
+                const rawLink = (file.type == 'blob' && window.props.directory !== "") ? <a href={`/${window.props.repo_owner}/${window.props.repo_name}/blob/${window.props.directory}/${file.name}`}><font style={{fontSize: '.75em', color: '#333'}}>raw</font></a> : (file.type == 'blob') ? <a href={`blob/${file.name}`}><font style={{fontSize: '.75em', color: '#333'}}>raw</font></a> : null
                 const downloadLink = (file.type == 'blob') ? <a href={`/${window.props.repo_owner}/${window.props.repo_name}/${(window.props.directory !== '') ? `${window.props.directory}/` : ``}blob/${file.name}`} download={`${file.name}`}><font style={{fontSize: '.75em', color: '#999'}}>download</font></a> : null
 
-                return <tr key={file.id}><th scope="row">{icon} {fileLink} &nbsp;{editLink} &nbsp;{renameLink} &nbsp;{downloadLink}</th><td>{deleteLink}</td><td><a href={`commit/${file.id}`}>{file.id}</a></td></tr>
+                return <tr key={file.name + file.type + file.id}><th scope="row">{icon} {fileLink} &nbsp;{editLink} &nbsp;{renameLink}</th><td>{rawLink}</td><td>{downloadLink}</td><td>{deleteLink}</td><td><a href={`commit/${file.id}`}>{file.id}</a></td></tr>
               })}
 
               </tbody>

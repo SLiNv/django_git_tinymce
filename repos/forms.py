@@ -7,7 +7,6 @@ from django.utils.text import slugify
 from tinymce.widgets import TinyMCE
 
 from .models import Repository
-# from tawgs.models import Tag
 
 User = get_user_model()
 
@@ -44,10 +43,10 @@ class RepositoryModelForm(forms.ModelForm):
 
         slugified = slugify(name)
         if Repository.objects.filter(
-            slug=slugified, owner=self.request.user).exists():
-            raise forms.ValidationError(
-                "Slugified repo named '{}' already exists".format(slugified)
-            )
+                        slug=slugified, owner=self.request.user).exists():
+                raise forms.ValidationError(
+                    "Slugified repo named '{}' already exists".format(slugified)
+                )
 
         return name
 
@@ -89,11 +88,10 @@ class RepositoryUpdateModelForm(forms.ModelForm):
 
             slugified = slugify(name)
             if Repository.objects.filter(
-                slug=slugified, owner=self.request.user).exists():
-                raise forms.ValidationError(
-                    "Slugified repo named '{}' already exists".format(slugified)
-                )
-
+                        slug=slugified, owner=self.request.user).exists():
+                    raise forms.ValidationError(
+                        "Slugified repo named '{}' already exists".format(slugified)
+                    )
         return name
 
 
@@ -147,6 +145,36 @@ class FileRenameForm(forms.Form):
         return new_filename
 
 
+class FolderCreateForm(forms.Form):
+    folder_name = forms.CharField(label='New folder name', required=True)
+    commit_message = forms.CharField(
+        required=False,
+        empty_value="folder created on {}".format(
+            datetime.now().strftime("%A, %d. %B %Y %I:%M%p")
+        ))
+
+    def save(self, *args, **kwargs):
+        if self.commit_message == "":
+            self.commit_message = "folder {} Created on {}".format(
+                self.folder_name,
+                datetime.now().strftime("%A, %d. %B %Y %I:%M%p"))
+        super(FolderCreateForm, self).save(*args, **kwargs)
+
+    def __init__(self, *args, **kwargs):
+        self.repo_tree = kwargs.pop('tree')
+        super(FolderCreateForm, self).__init__(*args, **kwargs)
+
+    def clean_folder_name(self):
+        folder_name = self.cleaned_data['folder_name']
+
+        # if self.repo_tree is None, mean the repo is empty,
+        # hence anyname will be legit. return folder_name to validate
+        if self.repo_tree is None:
+            return folder_name
+
+        return folder_name
+
+
 class RepoForkRenameForm(forms.Form):
     new_reponame = forms.CharField(label='New fork name', required=True)
 
@@ -169,37 +197,30 @@ class RepoForkRenameForm(forms.Form):
 
         slugified = slugify(new_reponame)
         if Repository.objects.filter(
-            slug=slugified, owner=self.request.user).exists():
+                        slug=slugified, owner=self.request.user).exists():
             raise forms.ValidationError(
                 "Slugified repo named '{}' already exists".format(slugified)
             )
-
         return new_reponame
 
 
 class AddEditorsForm(forms.Form):
-    new_editor_username = forms.CharField(label='Username', required=False)
-    # new_editor_email = forms.CharField(label='Or enter email address', required=False)
-
-    def clean_new_editor_username(self):
-        new_editor_username = self.cleaned_data['new_editor_username']
-        print(new_editor_username, 'new_editor_username')
-        user_pull = User.objects.get(username=new_editor_username)
-        if not user_pull:
-            raise forms.ValidationError(
-                "User named '{}' not found".format(new_editor_username)
-            )
-        return new_editor_username
+    new_editor_username = forms.CharField(label='Username', required=True)
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
         super(AddEditorsForm, self).__init__(*args, **kwargs)
 
-    def clean_new_editor_email(self):
-        new_editor_email = self.cleaned_data['new_editor_email']
-        user_pull = User.objects.get(username=new_editor_email)
-        if not user_pull:
+    def clean_new_editor_username(self):
+        new_editor_username = self.cleaned_data['new_editor_username']
+        print(new_editor_username, 'new_editor_username')
+
+        if not User.objects.filter(username=new_editor_username).exists():
             raise forms.ValidationError(
-                "User email '{}' not found".format(new_editor_email)
+                "User named '{}' not found".format(new_editor_username)
             )
-        return new_editor_email
+
+        if new_editor_username == self.request.user.username:
+            raise forms.ValidationError("You are already the owner!")
+
+        return new_editor_username
