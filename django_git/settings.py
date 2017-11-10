@@ -191,6 +191,7 @@ CKEDITOR_CONFIGS = {
         'extraPlugins': ','.join([
             'uploadimage',  # the upload image feature
         ]),
+        'width': '100%',
     }
 }
 
