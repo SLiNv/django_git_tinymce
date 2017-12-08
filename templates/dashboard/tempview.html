@@ -4,19 +4,19 @@
 {% block extra_head %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/muuri/0.5.1/muuri.min.js"></script>
-<link rel="stylesheet" href="{% static 'tempstatic/kanban.css' %}">
-<script src="{% static 'tempstatic/kanban.js' %}"></script>
+<link rel="stylesheet" href="{% static 'tempstatic/sidebar.css' %}">
+<script src="{% static 'tempstatic/sidebar.js' %}"></script>
 {% endblock %}
 
 {% block content %}
 
-<section class="kanban-demo">
+<section class="sidebar">
 
-      <h2 class="section-title"><span>Kanban Demo</span></h2>
+      <h2 class="section-title"><span>Sidebar</span></h2>
 
       <div class="board">
-        <div class="board-column todo">
-          <div class="board-column-header">To do</div>
+        <div class="board-column sidebar">
+          <div class="board-column-header">Sidebar</div>
           <div class="board-column-content">
             <div class="board-item"><div class="board-item-content"><span>Item #</span>1</div></div>
             <div class="board-item"><div class="board-item-content"><span>Item #</span>2</div></div>
@@ -50,7 +50,9 @@
       </div>
 
     </section>
-
+    {% comment %}
+<button class="submit-btn">submit</button>
+{% endcomment %}
 
 {% endblock %}
 
