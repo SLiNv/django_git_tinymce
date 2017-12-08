@@ -11,7 +11,7 @@ Back-end:
   - ~~Fix create file form - wrong editor~~
   - Template nav image absolut url
   - ~~Prefill rename file form~~
-  - file rename should slug/protect (don't allow ' or " etc..)
+  - ~~file rename should be slugified/protected (don't allow ' or " etc..)~~
   - Base folder xxxx while in folder 
   - ~~Move submit button down in repo settings page~~
   - ~~remove gitusers model~~
