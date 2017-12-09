@@ -29,12 +29,17 @@
 	var textinput = $('.textinput');
 	textinput.after('<p id="warning"></p>');
 	var warningP = $("#warning");
+
 	textinput.on( 'input', function() {
 	  console.log($(this).val());
-	  if ( filename_check( $(this).val() ) ){
+	  if ( filename_check( $(this).val() )){
 	  	warningP.html("Your filename will be: " + '<font color="red">' + slugify($(this).val()) + "</font>");
+	  	textinput.change(function() {
+			$(this).val(slugify($(this).val()));
+		});
 	  }
-	  if ( !filename_check( $(this).val() ) ){
+	  
+	  if ( !filename_check( $(this).val() )){
 	  	warningP.html("");
 	  }
 	});
