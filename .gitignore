@@ -21,3 +21,5 @@ package-lock.json
 git_repos/
 flake8.txt
 to-do.txt
+
+!/media/git_repos/admin/49
